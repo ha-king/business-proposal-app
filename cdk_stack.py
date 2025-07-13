@@ -83,9 +83,9 @@ class BusinessProposalStack(Stack):
 
         # ALB Listener
         listener = alb.add_listener(f"{prefix}Listener", port=80, open=True)
-        listener.add_targets(f"{prefix}Targets", port=8501, targets=[service],
-                           conditions=[elbv2.ListenerCondition.http_header(CUSTOM_HEADER_NAME, [Config.CUSTOM_HEADER_VALUE])])
-        listener.add_action("default", action=elbv2.ListenerAction.fixed_response(403, "text/plain", "Access denied"))
+        listener.add_targets(f"{prefix}Targets", port=8501, protocol=elbv2.ApplicationProtocol.HTTP, targets=[service],
+                           priority=1, conditions=[elbv2.ListenerCondition.http_header(CUSTOM_HEADER_NAME, [Config.CUSTOM_HEADER_VALUE])])
+        listener.add_action("default", action=elbv2.ListenerAction.fixed_response(status_code=403, content_type="text/plain", message_body="Access denied"))
 
         CfnOutput(self, "CloudFrontURL", value=distribution.domain_name)
         CfnOutput(self, "CognitoPoolId", value=user_pool.user_pool_id)

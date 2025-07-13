@@ -1,0 +1,359 @@
+{
+  "version": "34.0.0",
+  "artifacts": {
+    "BusinessProposalStack.assets": {
+      "type": "cdk:asset-manifest",
+      "properties": {
+        "file": "BusinessProposalStack.assets.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+      }
+    },
+    "BusinessProposalStack": {
+      "type": "aws:cloudformation:stack",
+      "environment": "aws://unknown-account/unknown-region",
+      "properties": {
+        "templateFile": "BusinessProposalStack.template.json",
+        "terminationProtection": false,
+        "validateOnSynth": false,
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/2a3c73be1d8a6fa161ff34edcaaf8e9cc4329ccd670e219ce10ad5d6b29eecda.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
+        "additionalDependencies": [
+          "BusinessProposalStack.assets"
+        ],
+        "lookupRole": {
+          "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-${AWS::Region}",
+          "requiresBootstrapStackVersion": 8,
+          "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+        }
+      },
+      "dependencies": [
+        "BusinessProposalStack.assets"
+      ],
+      "metadata": {
+        "/BusinessProposalStack/BusinessProposalProdUserPool/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdUserPool8EBF4256"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdUserPoolClient/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdUserPoolClientEA46CA45"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdUserPoolClient/DescribeCognitoUserPoolClient/Resource/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdUserPoolClientDescribeCognitoUserPoolClientAF01F94A"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdUserPoolClient/DescribeCognitoUserPoolClient/CustomResourcePolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdUserPoolClientDescribeCognitoUserPoolClientCustomResourcePolicy789A84CD"
+          }
+        ],
+        "/BusinessProposalStack/AWS679f53fac002430cb0da5b7982bd2287/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2"
+          }
+        ],
+        "/BusinessProposalStack/AWS679f53fac002430cb0da5b7982bd2287/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "AWS679f53fac002430cb0da5b7982bd22872D164C4C"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdParamCognitoSecret/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdParamCognitoSecret9BD35E93"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdAppVpc/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdAppVpc498D487D"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdAppVpc/PublicSubnet1/Subnet": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdAppVpcPublicSubnet1Subnet98ECF40E"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdAppVpc/PublicSubnet1/RouteTable": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdAppVpcPublicSubnet1RouteTableD9190811"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdAppVpc/PublicSubnet1/RouteTableAssociation": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdAppVpcPublicSubnet1RouteTableAssociationF8253A69"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdAppVpc/PublicSubnet1/DefaultRoute": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdAppVpcPublicSubnet1DefaultRoute3E55A1C2"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdAppVpc/PublicSubnet1/EIP": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdAppVpcPublicSubnet1EIP6E66C53F"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdAppVpc/PublicSubnet1/NATGateway": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdAppVpcPublicSubnet1NATGateway8EFFA9E6"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdAppVpc/PublicSubnet2/Subnet": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdAppVpcPublicSubnet2SubnetA5A67AF4"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdAppVpc/PublicSubnet2/RouteTable": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdAppVpcPublicSubnet2RouteTable59DBF793"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdAppVpc/PublicSubnet2/RouteTableAssociation": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdAppVpcPublicSubnet2RouteTableAssociation70510720"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdAppVpc/PublicSubnet2/DefaultRoute": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdAppVpcPublicSubnet2DefaultRouteF63C81E4"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdAppVpc/PrivateSubnet1/Subnet": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdAppVpcPrivateSubnet1Subnet21FE5CCB"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdAppVpc/PrivateSubnet1/RouteTable": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdAppVpcPrivateSubnet1RouteTableDFF7FE57"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdAppVpc/PrivateSubnet1/RouteTableAssociation": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdAppVpcPrivateSubnet1RouteTableAssociation2BF09937"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdAppVpc/PrivateSubnet1/DefaultRoute": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdAppVpcPrivateSubnet1DefaultRouteDC15FAE8"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdAppVpc/PrivateSubnet2/Subnet": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdAppVpcPrivateSubnet2SubnetB3777B5E"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdAppVpc/PrivateSubnet2/RouteTable": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdAppVpcPrivateSubnet2RouteTableE3C18691"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdAppVpc/PrivateSubnet2/RouteTableAssociation": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdAppVpcPrivateSubnet2RouteTableAssociationADE95AD9"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdAppVpc/PrivateSubnet2/DefaultRoute": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdAppVpcPrivateSubnet2DefaultRoute29806C56"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdAppVpc/IGW": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdAppVpcIGWBA25ACD1"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdAppVpc/VPCGW": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdAppVpcVPCGW2536CF47"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdSecurityGroupECS/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdSecurityGroupECS2793D30F"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdSecurityGroupECS/from BusinessProposalStackBusinessProposalProdSecurityGroupALBAEF5EAAE:8501": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdSecurityGroupECSfromBusinessProposalStackBusinessProposalProdSecurityGroupALBAEF5EAAE85012731FC69"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdSecurityGroupALB/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdSecurityGroupALB8AE88121"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdCluster/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdCluster85DD0A56"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdCluster/BusinessProposalProdCluster": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdClusterC1EAA331"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdAlb/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdAlbAD2EA0CB"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdAlb/BusinessProposalProdListener/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdAlbBusinessProposalProdListenerB38B9517"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdAlb/BusinessProposalProdListener/BusinessProposalProdTargetsGroup/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdAlbBusinessProposalProdListenerBusinessProposalProdTargetsGroupD8752E4B"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdAlb/BusinessProposalProdListener/BusinessProposalProdTargetsRule/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdAlbBusinessProposalProdListenerBusinessProposalProdTargetsRuleC152E4E2"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdTaskDef/TaskRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdTaskDefTaskRole0D62FD87"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdTaskDef/TaskRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdTaskDefTaskRoleDefaultPolicy2D742710"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdTaskDef/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdTaskDef7143AE5D"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdTaskDef/BusinessProposalProdContainer/LogGroup/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdTaskDefBusinessProposalProdContainerLogGroupD9D0C21B"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdTaskDef/ExecutionRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdTaskDefExecutionRole72E0D58C"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdTaskDef/ExecutionRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdTaskDefExecutionRoleDefaultPolicy1AB3E7E5"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdService/Service": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdService7AB6E1F4"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdBedrockPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdBedrockPolicy549232E9"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdDistribution/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdDistribution3B138C62"
+          }
+        ],
+        "/BusinessProposalStack/CloudFrontURL": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CloudFrontURL"
+          }
+        ],
+        "/BusinessProposalStack/CognitoPoolId": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CognitoPoolId"
+          }
+        ],
+        "/BusinessProposalStack/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/BusinessProposalStack/CDKMetadata/Condition": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadataAvailable"
+          }
+        ],
+        "/BusinessProposalStack/BootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BootstrapVersion"
+          }
+        ],
+        "/BusinessProposalStack/CheckBootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheckBootstrapVersion"
+          }
+        ]
+      },
+      "displayName": "BusinessProposalStack"
+    },
+    "Tree": {
+      "type": "cdk:tree",
+      "properties": {
+        "file": "tree.json"
+      }
+    }
+  }
+}
