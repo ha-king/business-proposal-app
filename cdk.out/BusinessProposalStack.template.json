@@ -953,7 +953,9 @@
        }
       ],
       "Essential": true,
-      "Image": "streamlit/streamlit:latest",
+      "Image": {
+       "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.${AWS::URLSuffix}/cdk-hnb659fds-container-assets-${AWS::AccountId}-${AWS::Region}:3e71d1d35a51d7ba901f54cd95fde85e3ca6f2b338edd8ab29e3ab415ff62c00"
+      },
       "LogConfiguration": {
        "LogDriver": "awslogs",
        "Options": {
@@ -1032,6 +1034,42 @@
    "Properties": {
     "PolicyDocument": {
      "Statement": [
+      {
+       "Action": [
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:BatchGetImage"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          "arn:",
+          {
+           "Ref": "AWS::Partition"
+          },
+          ":ecr:",
+          {
+           "Ref": "AWS::Region"
+          },
+          ":",
+          {
+           "Ref": "AWS::AccountId"
+          },
+          ":repository/",
+          {
+           "Fn::Sub": "cdk-hnb659fds-container-assets-${AWS::AccountId}-${AWS::Region}"
+          }
+         ]
+        ]
+       }
+      },
+      {
+       "Action": "ecr:GetAuthorizationToken",
+       "Effect": "Allow",
+       "Resource": "*"
+      },
       {
        "Action": [
         "logs:CreateLogStream",
@@ -1315,12 +1353,77 @@
        }
       },
       {
-       "Action": [
-        "ecr:*",
-        "ecs:*"
-       ],
+       "Action": "*",
        "Effect": "Allow",
        "Resource": "*"
+      },
+      {
+       "Action": [
+        "s3:GetObject*",
+        "s3:GetBucket*",
+        "s3:List*",
+        "s3:DeleteObject*",
+        "s3:PutObject",
+        "s3:PutObjectLegalHold",
+        "s3:PutObjectRetention",
+        "s3:PutObjectTagging",
+        "s3:PutObjectVersionTagging",
+        "s3:Abort*"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "BusinessProposalProdPipelineArtifactsBucketB9483E42",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "BusinessProposalProdPipelineArtifactsBucketB9483E42",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "kms:Decrypt",
+        "kms:DescribeKey",
+        "kms:Encrypt",
+        "kms:ReEncrypt*",
+        "kms:GenerateDataKey*"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "BusinessProposalProdPipelineArtifactsBucketEncryptionKey09C243AD",
+         "Arn"
+        ]
+       }
+      },
+      {
+       "Action": [
+        "kms:Decrypt",
+        "kms:Encrypt",
+        "kms:ReEncrypt*",
+        "kms:GenerateDataKey*"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "BusinessProposalProdPipelineArtifactsBucketEncryptionKey09C243AD",
+         "Arn"
+        ]
+       }
       }
      ],
      "Version": "2012-10-17"
@@ -1345,47 +1448,14 @@
     "Cache": {
      "Type": "NO_CACHE"
     },
-    "EncryptionKey": "alias/aws/s3",
+    "EncryptionKey": {
+     "Fn::GetAtt": [
+      "BusinessProposalProdPipelineArtifactsBucketEncryptionKey09C243AD",
+      "Arn"
+     ]
+    },
     "Environment": {
      "ComputeType": "BUILD_GENERAL1_SMALL",
-     "EnvironmentVariables": [
-      {
-       "Name": "AWS_ACCOUNT_ID",
-       "Type": "PLAINTEXT",
-       "Value": {
-        "Ref": "AWS::AccountId"
-       }
-      },
-      {
-       "Name": "IMAGE_REPO_NAME",
-       "Type": "PLAINTEXT",
-       "Value": {
-        "Ref": "BusinessProposalProdECRRepo30B4F726"
-       }
-      },
-      {
-       "Name": "IMAGE_TAG",
-       "Type": "PLAINTEXT",
-       "Value": "latest"
-      },
-      {
-       "Name": "CLUSTER_NAME",
-       "Type": "PLAINTEXT",
-       "Value": {
-        "Ref": "BusinessProposalProdCluster85DD0A56"
-       }
-      },
-      {
-       "Name": "SERVICE_NAME",
-       "Type": "PLAINTEXT",
-       "Value": {
-        "Fn::GetAtt": [
-         "BusinessProposalProdService7AB6E1F4",
-         "Name"
-        ]
-       }
-      }
-     ],
      "Image": "aws/codebuild/standard:7.0",
      "ImagePullCredentialsType": "CODEBUILD",
      "PrivilegedMode": true,
@@ -1398,23 +1468,484 @@
      ]
     },
     "Source": {
-     "BuildSpec": "{\n  \"version\": \"0.2\",\n  \"phases\": {\n    \"pre_build\": {\n      \"commands\": [\n        \"aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com\"\n      ]\n    },\n    \"build\": {\n      \"commands\": [\n        \"docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .\",\n        \"docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG\"\n      ]\n    },\n    \"post_build\": {\n      \"commands\": [\n        \"docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG\",\n        \"aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --force-new-deployment\"\n      ]\n    }\n  }\n}",
-     "Location": "https://github.com/ha-king/business-proposal-app.git",
-     "ReportBuildStatus": true,
-     "Type": "GITHUB"
-    },
-    "Triggers": {
-     "Webhook": true
+     "BuildSpec": "{\n  \"version\": \"0.2\",\n  \"phases\": {\n    \"install\": {\n      \"runtime-versions\": {\n        \"python\": \"3.12\",\n        \"nodejs\": \"20\"\n      },\n      \"commands\": [\n        \"npm install -g aws-cdk\",\n        \"pip install aws-cdk-lib constructs\"\n      ]\n    },\n    \"build\": {\n      \"commands\": [\n        \"echo 'Building and deploying application with Docker image'\",\n        \"export CDK_DOCKER=docker\",\n        \"cdk deploy --require-approval never --app 'python3 cdk_app.py'\"\n      ]\n    }\n  }\n}",
+     "Type": "NO_SOURCE"
     }
    },
    "Metadata": {
     "aws:cdk:path": "BusinessProposalStack/BusinessProposalProdBuild/Resource"
    }
   },
+  "BusinessProposalProdPipelineArtifactsBucketEncryptionKey09C243AD": {
+   "Type": "AWS::KMS::Key",
+   "Properties": {
+    "KeyPolicy": {
+     "Statement": [
+      {
+       "Action": "kms:*",
+       "Effect": "Allow",
+       "Principal": {
+        "AWS": {
+         "Fn::Join": [
+          "",
+          [
+           "arn:",
+           {
+            "Ref": "AWS::Partition"
+           },
+           ":iam::",
+           {
+            "Ref": "AWS::AccountId"
+           },
+           ":root"
+          ]
+         ]
+        }
+       },
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "BusinessProposalStack/BusinessProposalProdPipeline/ArtifactsBucketEncryptionKey/Resource"
+   }
+  },
+  "BusinessProposalProdPipelineArtifactsBucketEncryptionKeyAliasA5239D24": {
+   "Type": "AWS::KMS::Alias",
+   "Properties": {
+    "AliasName": "alias/codepipeline-businessproposalstackbusinessproposalprodpipelineff850aa3",
+    "TargetKeyId": {
+     "Fn::GetAtt": [
+      "BusinessProposalProdPipelineArtifactsBucketEncryptionKey09C243AD",
+      "Arn"
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "BusinessProposalStack/BusinessProposalProdPipeline/ArtifactsBucketEncryptionKeyAlias/Resource"
+   }
+  },
+  "BusinessProposalProdPipelineArtifactsBucketB9483E42": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "BucketEncryption": {
+     "ServerSideEncryptionConfiguration": [
+      {
+       "ServerSideEncryptionByDefault": {
+        "KMSMasterKeyID": {
+         "Fn::GetAtt": [
+          "BusinessProposalProdPipelineArtifactsBucketEncryptionKey09C243AD",
+          "Arn"
+         ]
+        },
+        "SSEAlgorithm": "aws:kms"
+       }
+      }
+     ]
+    },
+    "PublicAccessBlockConfiguration": {
+     "BlockPublicAcls": true,
+     "BlockPublicPolicy": true,
+     "IgnorePublicAcls": true,
+     "RestrictPublicBuckets": true
+    }
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "BusinessProposalStack/BusinessProposalProdPipeline/ArtifactsBucket/Resource"
+   }
+  },
+  "BusinessProposalProdPipelineArtifactsBucketPolicy87218186": {
+   "Type": "AWS::S3::BucketPolicy",
+   "Properties": {
+    "Bucket": {
+     "Ref": "BusinessProposalProdPipelineArtifactsBucketB9483E42"
+    },
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "s3:*",
+       "Condition": {
+        "Bool": {
+         "aws:SecureTransport": "false"
+        }
+       },
+       "Effect": "Deny",
+       "Principal": {
+        "AWS": "*"
+       },
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "BusinessProposalProdPipelineArtifactsBucketB9483E42",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "BusinessProposalProdPipelineArtifactsBucketB9483E42",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BusinessProposalStack/BusinessProposalProdPipeline/ArtifactsBucket/Policy/Resource"
+   }
+  },
+  "BusinessProposalProdPipelineRole0461E0D3": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "codepipeline.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BusinessProposalStack/BusinessProposalProdPipeline/Role/Resource"
+   }
+  },
+  "BusinessProposalProdPipelineRoleDefaultPolicy942E69E3": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "s3:GetObject*",
+        "s3:GetBucket*",
+        "s3:List*",
+        "s3:DeleteObject*",
+        "s3:PutObject",
+        "s3:PutObjectLegalHold",
+        "s3:PutObjectRetention",
+        "s3:PutObjectTagging",
+        "s3:PutObjectVersionTagging",
+        "s3:Abort*"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "BusinessProposalProdPipelineArtifactsBucketB9483E42",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "BusinessProposalProdPipelineArtifactsBucketB9483E42",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "kms:Decrypt",
+        "kms:DescribeKey",
+        "kms:Encrypt",
+        "kms:ReEncrypt*",
+        "kms:GenerateDataKey*"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "BusinessProposalProdPipelineArtifactsBucketEncryptionKey09C243AD",
+         "Arn"
+        ]
+       }
+      },
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "BusinessProposalProdPipelineBuildCodePipelineActionRoleA3B2D1C9",
+         "Arn"
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "BusinessProposalProdPipelineRoleDefaultPolicy942E69E3",
+    "Roles": [
+     {
+      "Ref": "BusinessProposalProdPipelineRole0461E0D3"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "BusinessProposalStack/BusinessProposalProdPipeline/Role/DefaultPolicy/Resource"
+   }
+  },
+  "BusinessProposalProdPipelineADA8D8C2": {
+   "Type": "AWS::CodePipeline::Pipeline",
+   "Properties": {
+    "ArtifactStore": {
+     "EncryptionKey": {
+      "Id": {
+       "Fn::GetAtt": [
+        "BusinessProposalProdPipelineArtifactsBucketEncryptionKey09C243AD",
+        "Arn"
+       ]
+      },
+      "Type": "KMS"
+     },
+     "Location": {
+      "Ref": "BusinessProposalProdPipelineArtifactsBucketB9483E42"
+     },
+     "Type": "S3"
+    },
+    "RoleArn": {
+     "Fn::GetAtt": [
+      "BusinessProposalProdPipelineRole0461E0D3",
+      "Arn"
+     ]
+    },
+    "Stages": [
+     {
+      "Actions": [
+       {
+        "ActionTypeId": {
+         "Category": "Source",
+         "Owner": "ThirdParty",
+         "Provider": "GitHub",
+         "Version": "1"
+        },
+        "Configuration": {
+         "Owner": "ha-king",
+         "Repo": "business-proposal-app",
+         "Branch": "main",
+         "OAuthToken": {
+          "Fn::Join": [
+           "",
+           [
+            "{{resolve:secretsmanager:arn:",
+            {
+             "Ref": "AWS::Partition"
+            },
+            ":secretsmanager:",
+            {
+             "Ref": "AWS::Region"
+            },
+            ":",
+            {
+             "Ref": "AWS::AccountId"
+            },
+            ":secret:github-token:SecretString:::}}"
+           ]
+          ]
+         },
+         "PollForSourceChanges": false
+        },
+        "Name": "GitHub_Source",
+        "OutputArtifacts": [
+         {
+          "Name": "Artifact_Source_GitHub_Source"
+         }
+        ],
+        "RunOrder": 1
+       }
+      ],
+      "Name": "Source"
+     },
+     {
+      "Actions": [
+       {
+        "ActionTypeId": {
+         "Category": "Build",
+         "Owner": "AWS",
+         "Provider": "CodeBuild",
+         "Version": "1"
+        },
+        "Configuration": {
+         "ProjectName": {
+          "Ref": "BusinessProposalProdBuild70C5505A"
+         }
+        },
+        "InputArtifacts": [
+         {
+          "Name": "Artifact_Source_GitHub_Source"
+         }
+        ],
+        "Name": "Build",
+        "OutputArtifacts": [
+         {
+          "Name": "Artifact_Build_Build"
+         }
+        ],
+        "RoleArn": {
+         "Fn::GetAtt": [
+          "BusinessProposalProdPipelineBuildCodePipelineActionRoleA3B2D1C9",
+          "Arn"
+         ]
+        },
+        "RunOrder": 1
+       }
+      ],
+      "Name": "Build"
+     }
+    ]
+   },
+   "DependsOn": [
+    "BusinessProposalProdPipelineRoleDefaultPolicy942E69E3",
+    "BusinessProposalProdPipelineRole0461E0D3"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "BusinessProposalStack/BusinessProposalProdPipeline/Resource"
+   }
+  },
+  "BusinessProposalProdPipelineSourceGitHubSourceWebhookResource33BC7E06": {
+   "Type": "AWS::CodePipeline::Webhook",
+   "Properties": {
+    "Authentication": "GITHUB_HMAC",
+    "AuthenticationConfiguration": {
+     "SecretToken": {
+      "Fn::Join": [
+       "",
+       [
+        "{{resolve:secretsmanager:arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":secretsmanager:",
+        {
+         "Ref": "AWS::Region"
+        },
+        ":",
+        {
+         "Ref": "AWS::AccountId"
+        },
+        ":secret:github-token:SecretString:::}}"
+       ]
+      ]
+     }
+    },
+    "Filters": [
+     {
+      "JsonPath": "$.ref",
+      "MatchEquals": "refs/heads/{Branch}"
+     }
+    ],
+    "RegisterWithThirdParty": true,
+    "TargetAction": "GitHub_Source",
+    "TargetPipeline": {
+     "Ref": "BusinessProposalProdPipelineADA8D8C2"
+    },
+    "TargetPipelineVersion": 1
+   },
+   "Metadata": {
+    "aws:cdk:path": "BusinessProposalStack/BusinessProposalProdPipeline/Source/GitHub_Source/WebhookResource"
+   }
+  },
+  "BusinessProposalProdPipelineBuildCodePipelineActionRoleA3B2D1C9": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "AWS": {
+         "Fn::Join": [
+          "",
+          [
+           "arn:",
+           {
+            "Ref": "AWS::Partition"
+           },
+           ":iam::",
+           {
+            "Ref": "AWS::AccountId"
+           },
+           ":root"
+          ]
+         ]
+        }
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BusinessProposalStack/BusinessProposalProdPipeline/Build/Build/CodePipelineActionRole/Resource"
+   }
+  },
+  "BusinessProposalProdPipelineBuildCodePipelineActionRoleDefaultPolicy0E46FC42": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "codebuild:BatchGetBuilds",
+        "codebuild:StartBuild",
+        "codebuild:StopBuild"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "BusinessProposalProdBuild70C5505A",
+         "Arn"
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "BusinessProposalProdPipelineBuildCodePipelineActionRoleDefaultPolicy0E46FC42",
+    "Roles": [
+     {
+      "Ref": "BusinessProposalProdPipelineBuildCodePipelineActionRoleA3B2D1C9"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "BusinessProposalStack/BusinessProposalProdPipeline/Build/Build/CodePipelineActionRole/DefaultPolicy/Resource"
+   }
+  },
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/31TzW7bMAx+lt5VLU2fIHXXokCxGXHXa0HLjMtGkQyRShAIfvdBtuN63bATvx+KFGl5rW9WK726ghNfm2Z/banWqRIwewUnfkvGt47E6/SLMZTeW1Xs3IwvoLCETpbWqPTKwqFuQKeKXGtRvHuIzgh5p2ZQ7GaxVwQHnUpvyZyzMaGtt5hpjr3i2zdgRmG9yUHxrb6LZo9yB4yK0QQUPoCDFoNO1cDz6RH1Cs1ap9fOZO21LFQZa0umirWb8ma09VHwBeqx+6h/ahtmbwguQwxGBt+fyhx+gDyC4AnOqgx0BMHPwk9OMDicE8abTGwjAub9kDdaoYmB5PwYfOymGf4jPLk2IHMeMei0xc4ziQ9D/U+WbdapsJEFQ/b+hgV0YEjOZfBHajAsZmX1AKGFvATe3+OOHF1W8FXxToAchoU2na0wHMmMax1hr9ACCxnroanBgjPk2uNap03XWTJD72cPzd3gjbf9gy/ziAXdlHPBC/8FQosyL3FJ/1FlG8cHsOS9sr5lnZ59O5e54F4Z62OzC96JTvfEEqiOlyUtea+Mb7COZBudyuA/0AzvY4J9r0xk8Ye3gOxjMMh6c+Ji0LaTpL7S/K0nPIPhT6kEWnJtzvgZpYtDq8K7hsa7lGd59+7brb5Z6Zv11QcTXYfohA6ot2P8DZFZfAIwBAAA"
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/32S0W7bMAxFv6XvqpamX5C6axGs2Iyk6x4LWmYcNrJkiFKCQPC/D7Icx+uGPfHcyxtZYriUd4uFXNzAiW9VfbjVVMm49aAOAk78HpVtDHkr409GV1qrRbEzE1+g0ITGz1vZ6YWGtqpBxi2ZRqO35ikY5ckaMUGxm8xeELQyllaTOqfGSBurMclUe8H378CMnuUqFcH3Mj4EdUD/AIwiY4qPlMv10LnuBaNy6LkFAw06GbeDTrlMvUC1lPGtU8l7KwtRhkqT2obKjLmJNjZ4fIUq3zb7V2/FbBXB5dFDI8HXdZnKd/DP4PEEZ1E6OoLH68Fr49EZnAL5JqNaeQ9q36Z/YIsqOPLnZ2dDN77hP8baNA6Z0xOdjBvsLJO3bjh/pq6YBpzSLGOhA3t0Kfo3FtCBIn8unT1SjW72dBZP4BpIM+HDI+7I0GUinx1rPJBBN/PG327RHUnlKWfsBWpgT0pbqCvQYBSZ5riUcdV1mtTw7RcL9cPQy7f9Q89zxB7NmLnwrP8KrkE/zXQu/3HKJuR9mOth5Jc1frTqgG7dQoN5o7VtWMYX20yfuHAvlLah3jlrvIyPxN5RFS4DnOteKFtjFUjXMpbOfqAaVmnE3O6oQ00GZSxHGiIz/oXV3tpDLw4ty/gNh91IZaUJOIkB+l6owN627w7ZBqeQ5erExeBtRkt8lmnLRp5gmMDWQ0OmSYkfwXdhuHlhTU35aeXZ7635ci/vFvJuefPBRLcuGE8tyk2uvwGf/ga22gQAAA=="
    },
    "Metadata": {
     "aws:cdk:path": "BusinessProposalStack/CDKMetadata/Default"

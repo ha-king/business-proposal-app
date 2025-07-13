@@ -18,7 +18,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/5cb2ca7587daaee19b8033cc7c7f61633d8018f034acdd7373d0b23085eee759.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/bbd97123fbdf567966476983ef256cc37f881cd592b7ee6b987760c4e49e67b0.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -332,6 +332,66 @@
           {
             "type": "aws:cdk:logicalId",
             "data": "BusinessProposalProdBuild70C5505A"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdPipeline/ArtifactsBucketEncryptionKey/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdPipelineArtifactsBucketEncryptionKey09C243AD"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdPipeline/ArtifactsBucketEncryptionKeyAlias/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdPipelineArtifactsBucketEncryptionKeyAliasA5239D24"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdPipeline/ArtifactsBucket/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdPipelineArtifactsBucketB9483E42"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdPipeline/ArtifactsBucket/Policy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdPipelineArtifactsBucketPolicy87218186"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdPipeline/Role/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdPipelineRole0461E0D3"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdPipeline/Role/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdPipelineRoleDefaultPolicy942E69E3"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdPipeline/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdPipelineADA8D8C2"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdPipeline/Source/GitHub_Source/WebhookResource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdPipelineSourceGitHubSourceWebhookResource33BC7E06"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdPipeline/Build/Build/CodePipelineActionRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdPipelineBuildCodePipelineActionRoleA3B2D1C9"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdPipeline/Build/Build/CodePipelineActionRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdPipelineBuildCodePipelineActionRoleDefaultPolicy0E46FC42"
           }
         ],
         "/BusinessProposalStack/CloudFrontURL": [

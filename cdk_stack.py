@@ -60,8 +60,11 @@ class BusinessProposalStack(Stack):
         # Task Definition
         task_def = ecs.FargateTaskDefinition(self, f"{prefix}TaskDef", memory_limit_mib=2048, cpu=1024)
         
+        # Build and push Docker image to ECR during CDK deployment
+        image = ecs.ContainerImage.from_asset('.')
+        
         task_def.add_container(f"{prefix}Container",
-                              image=ecs.ContainerImage.from_ecr_repository(ecr_repo, "latest"),
+                              image=image,
                               port_mappings=[ecs.PortMapping(container_port=8501, protocol=ecs.Protocol.TCP)],
                               logging=ecs.LogDrivers.aws_logs(stream_prefix="BusinessProposal"),
                               environment={"ENVIRONMENT": env_name})
@@ -98,30 +101,33 @@ class BusinessProposalStack(Stack):
             self, f"{prefix}GitHubToken", secret_name="github-token")
         
         source_output = codepipeline.Artifact()
+        build_output = codepipeline.Artifact()
+        
         build_project = codebuild.Project(
             self, f"{prefix}Build",
-            source=codebuild.Source.git_hub(
-                owner="ha-king",
-                repo="business-proposal-app",
-                webhook=True
-            ),
             build_spec=codebuild.BuildSpec.from_object({
                 "version": "0.2",
                 "phases": {
-                    "pre_build": {
+                    "install": {
+                        "runtime-versions": {
+                            "python": "3.12",
+                            "nodejs": "20"
+                        },
                         "commands": [
-                            "aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
+                            "npm install -g aws-cdk",
+                            "pip install aws-cdk-lib constructs"
                         ]
                     },
                     "build": {
                         "commands": [
-                            "docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .",
-                            "docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG"
+                            "echo 'Building and deploying application with Docker image'",
+                            "export CDK_DOCKER=docker",
+                            "cdk deploy --require-approval never --app 'python3 cdk_app.py'"
                         ]
                     },
                     "post_build": {
                         "commands": [
-                            "docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG",
+                            "echo 'Forcing ECS service update to use new container image'",
                             "aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --force-new-deployment"
                         ]
                     }
@@ -129,19 +135,42 @@ class BusinessProposalStack(Stack):
             }),
             environment=codebuild.BuildEnvironment(
                 build_image=codebuild.LinuxBuildImage.STANDARD_7_0,
-                privileged=True,
-                environment_variables={
-                    "AWS_ACCOUNT_ID": codebuild.BuildEnvironmentVariable(value=self.account),
-                    "IMAGE_REPO_NAME": codebuild.BuildEnvironmentVariable(value=ecr_repo.repository_name),
-                    "IMAGE_TAG": codebuild.BuildEnvironmentVariable(value="latest"),
-                    "CLUSTER_NAME": codebuild.BuildEnvironmentVariable(value=cluster.cluster_name),
-                    "SERVICE_NAME": codebuild.BuildEnvironmentVariable(value=service.service_name)
-                }
+                privileged=True
             )
         )
         
         build_project.add_to_role_policy(iam.PolicyStatement(
-            actions=["ecr:*", "ecs:*"], resources=["*"]))
+            actions=["*"], resources=["*"]))
+        
+        codepipeline.Pipeline(
+            self, f"{prefix}Pipeline",
+            stages=[
+                codepipeline.StageProps(
+                    stage_name="Source",
+                    actions=[
+                        codepipeline_actions.GitHubSourceAction(
+                            action_name="GitHub_Source",
+                            owner="ha-king",
+                            repo="business-proposal-app",
+                            branch="main",
+                            oauth_token=github_token.secret_value,
+                            output=source_output
+                        )
+                    ]
+                ),
+                codepipeline.StageProps(
+                    stage_name="Build",
+                    actions=[
+                        codepipeline_actions.CodeBuildAction(
+                            action_name="Build",
+                            project=build_project,
+                            input=source_output,
+                            outputs=[build_output]
+                        )
+                    ]
+                )
+            ]
+        )
         
 
 
