@@ -105,37 +105,17 @@ class BusinessProposalStack(Stack):
         
         build_project = codebuild.Project(
             self, f"{prefix}Build",
-            build_spec=codebuild.BuildSpec.from_object({
-                "version": "0.2",
-                "phases": {
-                    "install": {
-                        "runtime-versions": {
-                            "python": "3.12",
-                            "nodejs": "20"
-                        },
-                        "commands": [
-                            "npm install -g aws-cdk",
-                            "pip install aws-cdk-lib constructs"
-                        ]
-                    },
-                    "build": {
-                        "commands": [
-                            "echo 'Building and deploying application with Docker image'",
-                            "export CDK_DOCKER=docker",
-                            "cdk deploy --require-approval never --app 'python3 cdk_app.py'"
-                        ]
-                    },
-                    "post_build": {
-                        "commands": [
-                            "echo 'Forcing ECS service update to use new container image'",
-                            "aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --force-new-deployment"
-                        ]
-                    }
-                }
-            }),
+            source=codebuild.Source.git_hub(
+                owner="ha-king",
+                repo="business-proposal-app"
+            ),
             environment=codebuild.BuildEnvironment(
                 build_image=codebuild.LinuxBuildImage.STANDARD_7_0,
-                privileged=True
+                privileged=True,
+                environment_variables={
+                    "CLUSTER_NAME": codebuild.BuildEnvironmentVariable(value=cluster.cluster_name),
+                    "SERVICE_NAME": codebuild.BuildEnvironmentVariable(value=service.service_name)
+                }
             )
         )
         

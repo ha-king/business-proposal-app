@@ -954,7 +954,7 @@
       ],
       "Essential": true,
       "Image": {
-       "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.${AWS::URLSuffix}/cdk-hnb659fds-container-assets-${AWS::AccountId}-${AWS::Region}:3e71d1d35a51d7ba901f54cd95fde85e3ca6f2b338edd8ab29e3ab415ff62c00"
+       "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.${AWS::URLSuffix}/cdk-hnb659fds-container-assets-${AWS::AccountId}-${AWS::Region}:fc25927744aa63b5143e5def1e8ba3bcdffda71a26b99e6e91bd29fb1979aa22"
       },
       "LogConfiguration": {
        "LogDriver": "awslogs",
@@ -1456,6 +1456,25 @@
     },
     "Environment": {
      "ComputeType": "BUILD_GENERAL1_SMALL",
+     "EnvironmentVariables": [
+      {
+       "Name": "CLUSTER_NAME",
+       "Type": "PLAINTEXT",
+       "Value": {
+        "Ref": "BusinessProposalProdCluster85DD0A56"
+       }
+      },
+      {
+       "Name": "SERVICE_NAME",
+       "Type": "PLAINTEXT",
+       "Value": {
+        "Fn::GetAtt": [
+         "BusinessProposalProdService7AB6E1F4",
+         "Name"
+        ]
+       }
+      }
+     ],
      "Image": "aws/codebuild/standard:7.0",
      "ImagePullCredentialsType": "CODEBUILD",
      "PrivilegedMode": true,
@@ -1468,8 +1487,9 @@
      ]
     },
     "Source": {
-     "BuildSpec": "{\n  \"version\": \"0.2\",\n  \"phases\": {\n    \"install\": {\n      \"runtime-versions\": {\n        \"python\": \"3.12\",\n        \"nodejs\": \"20\"\n      },\n      \"commands\": [\n        \"npm install -g aws-cdk\",\n        \"pip install aws-cdk-lib constructs\"\n      ]\n    },\n    \"build\": {\n      \"commands\": [\n        \"echo 'Building and deploying application with Docker image'\",\n        \"export CDK_DOCKER=docker\",\n        \"cdk deploy --require-approval never --app 'python3 cdk_app.py'\"\n      ]\n    }\n  }\n}",
-     "Type": "NO_SOURCE"
+     "Location": "https://github.com/ha-king/business-proposal-app.git",
+     "ReportBuildStatus": true,
+     "Type": "GITHUB"
     }
    },
    "Metadata": {
