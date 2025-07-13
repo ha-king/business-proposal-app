@@ -8,6 +8,7 @@ from aws_cdk import (
     aws_cloudfront as cloudfront,
     aws_cloudfront_origins as origins,
     aws_elasticloadbalancingv2 as elbv2,
+    aws_ecr as ecr,
     SecretValue,
     CfnOutput,
 )
@@ -44,6 +45,9 @@ class BusinessProposalStack(Stack):
         alb_sg = ec2.SecurityGroup(self, f"{prefix}SecurityGroupALB", vpc=vpc)
         ecs_sg.add_ingress_rule(peer=alb_sg, connection=ec2.Port.tcp(8501))
 
+        # ECR Repository
+        ecr_repo = ecr.Repository(self, f"{prefix}ECRRepo", repository_name=f"{Config.STACK_NAME.lower()}-app")
+        
         # ECS
         cluster = ecs.Cluster(self, f"{prefix}Cluster", enable_fargate_capacity_providers=True, vpc=vpc)
 
@@ -52,10 +56,9 @@ class BusinessProposalStack(Stack):
 
         # Task Definition
         task_def = ecs.FargateTaskDefinition(self, f"{prefix}TaskDef", memory_limit_mib=2048, cpu=1024)
-        image = ecs.ContainerImage.from_asset('.')
         
         task_def.add_container(f"{prefix}Container",
-                              image=image,
+                              image=ecs.ContainerImage.from_registry("nginx:latest"),  # Placeholder image
                               port_mappings=[ecs.PortMapping(container_port=8501, protocol=ecs.Protocol.TCP)],
                               logging=ecs.LogDrivers.aws_logs(stream_prefix="BusinessProposal"),
                               environment={"ENVIRONMENT": env_name})
@@ -89,3 +92,6 @@ class BusinessProposalStack(Stack):
 
         CfnOutput(self, "CloudFrontURL", value=distribution.domain_name)
         CfnOutput(self, "CognitoPoolId", value=user_pool.user_pool_id)
+        CfnOutput(self, "ECRRepository", value=ecr_repo.repository_uri)
+        CfnOutput(self, "ClusterName", value=cluster.cluster_name)
+        CfnOutput(self, "ServiceName", value=service.service_name)
