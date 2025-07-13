@@ -18,7 +18,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/2a3c73be1d8a6fa161ff34edcaaf8e9cc4329ccd670e219ce10ad5d6b29eecda.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/5cb2ca7587daaee19b8033cc7c7f61633d8018f034acdd7373d0b23085eee759.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -220,6 +220,12 @@
             "data": "BusinessProposalProdSecurityGroupALB8AE88121"
           }
         ],
+        "/BusinessProposalStack/BusinessProposalProdECRRepo/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdECRRepo30B4F726"
+          }
+        ],
         "/BusinessProposalStack/BusinessProposalProdCluster/Resource": [
           {
             "type": "aws:cdk:logicalId",
@@ -310,6 +316,24 @@
             "data": "BusinessProposalProdDistribution3B138C62"
           }
         ],
+        "/BusinessProposalStack/BusinessProposalProdBuild/Role/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdBuildRole1FA561A9"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdBuild/Role/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdBuildRoleDefaultPolicy8811E6D1"
+          }
+        ],
+        "/BusinessProposalStack/BusinessProposalProdBuild/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BusinessProposalProdBuild70C5505A"
+          }
+        ],
         "/BusinessProposalStack/CloudFrontURL": [
           {
             "type": "aws:cdk:logicalId",
@@ -320,6 +344,24 @@
           {
             "type": "aws:cdk:logicalId",
             "data": "CognitoPoolId"
+          }
+        ],
+        "/BusinessProposalStack/ECRRepository": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ECRRepository"
+          }
+        ],
+        "/BusinessProposalStack/ClusterName": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ClusterName"
+          }
+        ],
+        "/BusinessProposalStack/ServiceName": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ServiceName"
           }
         ],
         "/BusinessProposalStack/CDKMetadata/Default": [

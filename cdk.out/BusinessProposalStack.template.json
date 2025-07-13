@@ -747,6 +747,17 @@
     "aws:cdk:path": "BusinessProposalStack/BusinessProposalProdSecurityGroupALB/Resource"
    }
   },
+  "BusinessProposalProdECRRepo30B4F726": {
+   "Type": "AWS::ECR::Repository",
+   "Properties": {
+    "RepositoryName": "businessproposal-app"
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "BusinessProposalStack/BusinessProposalProdECRRepo/Resource"
+   }
+  },
   "BusinessProposalProdCluster85DD0A56": {
    "Type": "AWS::ECS::Cluster",
    "Metadata": {
@@ -942,9 +953,7 @@
        }
       ],
       "Essential": true,
-      "Image": {
-       "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.${AWS::URLSuffix}/cdk-hnb659fds-container-assets-${AWS::AccountId}-${AWS::Region}:e9c8aaaefc6722f255ddeed73ff73702f1c1c682a0055360af7db0788644fec3"
-      },
+      "Image": "streamlit/streamlit:latest",
       "LogConfiguration": {
        "LogDriver": "awslogs",
        "Options": {
@@ -1023,42 +1032,6 @@
    "Properties": {
     "PolicyDocument": {
      "Statement": [
-      {
-       "Action": [
-        "ecr:BatchCheckLayerAvailability",
-        "ecr:GetDownloadUrlForLayer",
-        "ecr:BatchGetImage"
-       ],
-       "Effect": "Allow",
-       "Resource": {
-        "Fn::Join": [
-         "",
-         [
-          "arn:",
-          {
-           "Ref": "AWS::Partition"
-          },
-          ":ecr:",
-          {
-           "Ref": "AWS::Region"
-          },
-          ":",
-          {
-           "Ref": "AWS::AccountId"
-          },
-          ":repository/",
-          {
-           "Fn::Sub": "cdk-hnb659fds-container-assets-${AWS::AccountId}-${AWS::Region}"
-          }
-         ]
-        ]
-       }
-      },
-      {
-       "Action": "ecr:GetAuthorizationToken",
-       "Effect": "Allow",
-       "Resource": "*"
-      },
       {
        "Action": [
         "logs:CreateLogStream",
@@ -1225,10 +1198,223 @@
     "aws:cdk:path": "BusinessProposalStack/BusinessProposalProdDistribution/Resource"
    }
   },
+  "BusinessProposalProdBuildRole1FA561A9": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "codebuild.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BusinessProposalStack/BusinessProposalProdBuild/Role/Resource"
+   }
+  },
+  "BusinessProposalProdBuildRoleDefaultPolicy8811E6D1": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::Join": [
+          "",
+          [
+           "arn:",
+           {
+            "Ref": "AWS::Partition"
+           },
+           ":logs:",
+           {
+            "Ref": "AWS::Region"
+           },
+           ":",
+           {
+            "Ref": "AWS::AccountId"
+           },
+           ":log-group:/aws/codebuild/",
+           {
+            "Ref": "BusinessProposalProdBuild70C5505A"
+           }
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           "arn:",
+           {
+            "Ref": "AWS::Partition"
+           },
+           ":logs:",
+           {
+            "Ref": "AWS::Region"
+           },
+           ":",
+           {
+            "Ref": "AWS::AccountId"
+           },
+           ":log-group:/aws/codebuild/",
+           {
+            "Ref": "BusinessProposalProdBuild70C5505A"
+           },
+           ":*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "codebuild:CreateReportGroup",
+        "codebuild:CreateReport",
+        "codebuild:UpdateReport",
+        "codebuild:BatchPutTestCases",
+        "codebuild:BatchPutCodeCoverages"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          "arn:",
+          {
+           "Ref": "AWS::Partition"
+          },
+          ":codebuild:",
+          {
+           "Ref": "AWS::Region"
+          },
+          ":",
+          {
+           "Ref": "AWS::AccountId"
+          },
+          ":report-group/",
+          {
+           "Ref": "BusinessProposalProdBuild70C5505A"
+          },
+          "-*"
+         ]
+        ]
+       }
+      },
+      {
+       "Action": [
+        "ecr:*",
+        "ecs:*"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "BusinessProposalProdBuildRoleDefaultPolicy8811E6D1",
+    "Roles": [
+     {
+      "Ref": "BusinessProposalProdBuildRole1FA561A9"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "BusinessProposalStack/BusinessProposalProdBuild/Role/DefaultPolicy/Resource"
+   }
+  },
+  "BusinessProposalProdBuild70C5505A": {
+   "Type": "AWS::CodeBuild::Project",
+   "Properties": {
+    "Artifacts": {
+     "Type": "NO_ARTIFACTS"
+    },
+    "Cache": {
+     "Type": "NO_CACHE"
+    },
+    "EncryptionKey": "alias/aws/s3",
+    "Environment": {
+     "ComputeType": "BUILD_GENERAL1_SMALL",
+     "EnvironmentVariables": [
+      {
+       "Name": "AWS_ACCOUNT_ID",
+       "Type": "PLAINTEXT",
+       "Value": {
+        "Ref": "AWS::AccountId"
+       }
+      },
+      {
+       "Name": "IMAGE_REPO_NAME",
+       "Type": "PLAINTEXT",
+       "Value": {
+        "Ref": "BusinessProposalProdECRRepo30B4F726"
+       }
+      },
+      {
+       "Name": "IMAGE_TAG",
+       "Type": "PLAINTEXT",
+       "Value": "latest"
+      },
+      {
+       "Name": "CLUSTER_NAME",
+       "Type": "PLAINTEXT",
+       "Value": {
+        "Ref": "BusinessProposalProdCluster85DD0A56"
+       }
+      },
+      {
+       "Name": "SERVICE_NAME",
+       "Type": "PLAINTEXT",
+       "Value": {
+        "Fn::GetAtt": [
+         "BusinessProposalProdService7AB6E1F4",
+         "Name"
+        ]
+       }
+      }
+     ],
+     "Image": "aws/codebuild/standard:7.0",
+     "ImagePullCredentialsType": "CODEBUILD",
+     "PrivilegedMode": true,
+     "Type": "LINUX_CONTAINER"
+    },
+    "ServiceRole": {
+     "Fn::GetAtt": [
+      "BusinessProposalProdBuildRole1FA561A9",
+      "Arn"
+     ]
+    },
+    "Source": {
+     "BuildSpec": "{\n  \"version\": \"0.2\",\n  \"phases\": {\n    \"pre_build\": {\n      \"commands\": [\n        \"aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com\"\n      ]\n    },\n    \"build\": {\n      \"commands\": [\n        \"docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .\",\n        \"docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG\"\n      ]\n    },\n    \"post_build\": {\n      \"commands\": [\n        \"docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG\",\n        \"aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --force-new-deployment\"\n      ]\n    }\n  }\n}",
+     "Location": "https://github.com/ha-king/business-proposal-app.git",
+     "ReportBuildStatus": true,
+     "Type": "GITHUB"
+    },
+    "Triggers": {
+     "Webhook": true
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "BusinessProposalStack/BusinessProposalProdBuild/Resource"
+   }
+  },
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/31T227bMAz9lr2rWpp+QequRYBiM+KurwUtMy4XWTJEKkFg+N8H+VavG/bEcw6PRJGmt/p2s9GbL3DhG1OdbiyVuisEzEnBhd8642tH4nX3kzHk3luVHd2CZ5BZQifr1Kj0ykJTVqC7glxtUbx7jM4IeacWkB0XsVcEje5yb8lcU2JCB28x0RR7xXdvwIzCepeC4jt9H80J5R4YFaMJKNyAgxqD7oqBp9Mj6hWare5eW5O01zxTeSwtmSKWbvIt6OCj4AuUY/VR/9B2zN4QzE0MiQS+7fMUvoM8geAFrioPdAbBj4v3TjA4XAzjSya2EwHz3qSJFmhiILk+BR/bqYf/CHtXB2ROLbLuMhtZMCTX3zCDFgzJNQ/+TBWGVTOsHiHUkLrk0wMeydHc42fFOwFyGFbadLbAcCYzzm2EvUILLGSsh6oEC86Qq89b3e3a1pIZaj97qO6H3PjaP/jaRyzoJs+MV/kXCDXKMqU1/ccthzh+4TVPQwzzoj14c8Kwb6DGcefQBH3A1jOJD9dh8ayvWXfPvl6qzrhXxvpYHYN3orsHYglUxnmma973ykQW37wFZB+DQda7C2eDdpgk9Zke3YIXMDyzEKjJ1cnxI0obh93LvKto/Nvyq7x79/VO32707fbLLya6CdEJNagPY/wNuwHplCEEAAA="
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/31TzW7bMAx+lt5VLU2fIHXXokCxGXHXa0HLjMtGkQyRShAIfvdBtuN63bATvx+KFGl5rW9WK726ghNfm2Z/banWqRIwewUnfkvGt47E6/SLMZTeW1Xs3IwvoLCETpbWqPTKwqFuQKeKXGtRvHuIzgh5p2ZQ7GaxVwQHnUpvyZyzMaGtt5hpjr3i2zdgRmG9yUHxrb6LZo9yB4yK0QQUPoCDFoNO1cDz6RH1Cs1ap9fOZO21LFQZa0umirWb8ma09VHwBeqx+6h/ahtmbwguQwxGBt+fyhx+gDyC4AnOqgx0BMHPwk9OMDicE8abTGwjAub9kDdaoYmB5PwYfOymGf4jPLk2IHMeMei0xc4ziQ9D/U+WbdapsJEFQ/b+hgV0YEjOZfBHajAsZmX1AKGFvATe3+OOHF1W8FXxToAchoU2na0wHMmMax1hr9ACCxnroanBgjPk2uNap03XWTJD72cPzd3gjbf9gy/ziAXdlHPBC/8FQosyL3FJ/1FlG8cHsOS9sr5lnZ59O5e54F4Z62OzC96JTvfEEqiOlyUtea+Mb7COZBudyuA/0AzvY4J9r0xk8Ye3gOxjMMh6c+Ji0LaTpL7S/K0nPIPhT6kEWnJtzvgZpYtDq8K7hsa7lGd59+7brb5Z6Zv11QcTXYfohA6ot2P8DZFZfAIwBAAA"
    },
    "Metadata": {
     "aws:cdk:path": "BusinessProposalStack/CDKMetadata/Default"
@@ -1248,6 +1434,69 @@
   "CognitoPoolId": {
    "Value": {
     "Ref": "BusinessProposalProdUserPool8EBF4256"
+   }
+  },
+  "ECRRepository": {
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      {
+       "Fn::Select": [
+        4,
+        {
+         "Fn::Split": [
+          ":",
+          {
+           "Fn::GetAtt": [
+            "BusinessProposalProdECRRepo30B4F726",
+            "Arn"
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      ".dkr.ecr.",
+      {
+       "Fn::Select": [
+        3,
+        {
+         "Fn::Split": [
+          ":",
+          {
+           "Fn::GetAtt": [
+            "BusinessProposalProdECRRepo30B4F726",
+            "Arn"
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      ".",
+      {
+       "Ref": "AWS::URLSuffix"
+      },
+      "/",
+      {
+       "Ref": "BusinessProposalProdECRRepo30B4F726"
+      }
+     ]
+    ]
+   }
+  },
+  "ClusterName": {
+   "Value": {
+    "Ref": "BusinessProposalProdCluster85DD0A56"
+   }
+  },
+  "ServiceName": {
+   "Value": {
+    "Fn::GetAtt": [
+     "BusinessProposalProdService7AB6E1F4",
+     "Name"
+    ]
    }
   }
  },

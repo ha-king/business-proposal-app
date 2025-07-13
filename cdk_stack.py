@@ -9,6 +9,9 @@ from aws_cdk import (
     aws_cloudfront_origins as origins,
     aws_elasticloadbalancingv2 as elbv2,
     aws_ecr as ecr,
+    aws_codepipeline as codepipeline,
+    aws_codepipeline_actions as codepipeline_actions,
+    aws_codebuild as codebuild,
     SecretValue,
     CfnOutput,
 )
@@ -58,7 +61,7 @@ class BusinessProposalStack(Stack):
         task_def = ecs.FargateTaskDefinition(self, f"{prefix}TaskDef", memory_limit_mib=2048, cpu=1024)
         
         task_def.add_container(f"{prefix}Container",
-                              image=ecs.ContainerImage.from_registry("nginx:latest"),  # Placeholder image
+                              image=ecs.ContainerImage.from_ecr_repository(ecr_repo, "latest"),
                               port_mappings=[ecs.PortMapping(container_port=8501, protocol=ecs.Protocol.TCP)],
                               logging=ecs.LogDrivers.aws_logs(stream_prefix="BusinessProposal"),
                               environment={"ENVIRONMENT": env_name})
@@ -89,6 +92,58 @@ class BusinessProposalStack(Stack):
         listener.add_targets(f"{prefix}Targets", port=8501, protocol=elbv2.ApplicationProtocol.HTTP, targets=[service],
                            priority=1, conditions=[elbv2.ListenerCondition.http_header(CUSTOM_HEADER_NAME, [Config.CUSTOM_HEADER_VALUE])])
         listener.add_action("default", action=elbv2.ListenerAction.fixed_response(status_code=403, content_type="text/plain", message_body="Access denied"))
+
+        # CI/CD Pipeline
+        github_token = secretsmanager.Secret.from_secret_name_v2(
+            self, f"{prefix}GitHubToken", secret_name="github-token")
+        
+        source_output = codepipeline.Artifact()
+        build_project = codebuild.Project(
+            self, f"{prefix}Build",
+            source=codebuild.Source.git_hub(
+                owner="ha-king",
+                repo="business-proposal-app",
+                webhook=True
+            ),
+            build_spec=codebuild.BuildSpec.from_object({
+                "version": "0.2",
+                "phases": {
+                    "pre_build": {
+                        "commands": [
+                            "aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
+                        ]
+                    },
+                    "build": {
+                        "commands": [
+                            "docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .",
+                            "docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG"
+                        ]
+                    },
+                    "post_build": {
+                        "commands": [
+                            "docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG",
+                            "aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --force-new-deployment"
+                        ]
+                    }
+                }
+            }),
+            environment=codebuild.BuildEnvironment(
+                build_image=codebuild.LinuxBuildImage.STANDARD_7_0,
+                privileged=True,
+                environment_variables={
+                    "AWS_ACCOUNT_ID": codebuild.BuildEnvironmentVariable(value=self.account),
+                    "IMAGE_REPO_NAME": codebuild.BuildEnvironmentVariable(value=ecr_repo.repository_name),
+                    "IMAGE_TAG": codebuild.BuildEnvironmentVariable(value="latest"),
+                    "CLUSTER_NAME": codebuild.BuildEnvironmentVariable(value=cluster.cluster_name),
+                    "SERVICE_NAME": codebuild.BuildEnvironmentVariable(value=service.service_name)
+                }
+            )
+        )
+        
+        build_project.add_to_role_policy(iam.PolicyStatement(
+            actions=["ecr:*", "ecs:*"], resources=["*"]))
+        
+
 
         CfnOutput(self, "CloudFrontURL", value=distribution.domain_name)
         CfnOutput(self, "CognitoPoolId", value=user_pool.user_pool_id)
