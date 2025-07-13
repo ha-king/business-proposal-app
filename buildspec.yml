@@ -1,0 +1,12 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      python: 3.12
+      nodejs: 20
+    commands:
+      - npm install -g aws-cdk
+      - pip install aws-cdk-lib constructs
+  build:
+    commands:
+      - cdk deploy --require-approval never
