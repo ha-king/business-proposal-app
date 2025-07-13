@@ -954,7 +954,7 @@
       ],
       "Essential": true,
       "Image": {
-       "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.${AWS::URLSuffix}/cdk-hnb659fds-container-assets-${AWS::AccountId}-${AWS::Region}:fc25927744aa63b5143e5def1e8ba3bcdffda71a26b99e6e91bd29fb1979aa22"
+       "Fn::Sub": "${AWS::AccountId}.dkr.ecr.${AWS::Region}.${AWS::URLSuffix}/cdk-hnb659fds-container-assets-${AWS::AccountId}-${AWS::Region}:572eb9b575a793ea99972d9b4851b1bcf7c13699dda475002d82c39d0a5ce0bc"
       },
       "LogConfiguration": {
        "LogDriver": "awslogs",
@@ -1201,6 +1201,7 @@
       ],
       "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
       "Compress": true,
+      "OriginRequestPolicyId": "216adef6-5c7f-47e4-b989-5492eafa07d3",
       "TargetOriginId": "BusinessProposalStackBusinessProposalProdDistributionOrigin1E0D79C6D",
       "ViewerProtocolPolicy": "redirect-to-https"
      },

@@ -1,5 +1,6 @@
 from aws_cdk import (
     Stack,
+    Duration,
     aws_ec2 as ec2,
     aws_ecs as ecs,
     aws_iam as iam,
@@ -82,13 +83,18 @@ class BusinessProposalStack(Stack):
         secret.grant_read(task_def.task_role)
 
         # CloudFront
-        origin = origins.LoadBalancerV2Origin(alb, custom_headers={CUSTOM_HEADER_NAME: Config.CUSTOM_HEADER_VALUE})
+        origin = origins.LoadBalancerV2Origin(
+            alb, 
+            custom_headers={CUSTOM_HEADER_NAME: Config.CUSTOM_HEADER_VALUE}
+        )
         distribution = cloudfront.Distribution(self, f"{prefix}Distribution",
                                              default_behavior=cloudfront.BehaviorOptions(
                                                  origin=origin,
                                                  viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
                                                  allowed_methods=cloudfront.AllowedMethods.ALLOW_ALL,
-                                                 cache_policy=cloudfront.CachePolicy.CACHING_DISABLED))
+                                                 cache_policy=cloudfront.CachePolicy.CACHING_DISABLED,
+                                                 origin_request_policy=cloudfront.OriginRequestPolicy.ALL_VIEWER
+                                             ))
 
         # ALB Listener
         listener = alb.add_listener(f"{prefix}Listener", port=80, open=True)
